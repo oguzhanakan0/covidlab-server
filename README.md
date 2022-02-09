@@ -1,2 +1,2 @@
-# covidlab-server
-CovidLab Backend
+# CovidLab
+CovidLab Backend Repo
