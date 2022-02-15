@@ -6,56 +6,58 @@ from django.http import JsonResponse
 from .models import User
 from django.forms.models import model_to_dict
 import datetime
+from django.utils import timezone
 
-cred = credentials.Certificate("/Users/oguzhanakan/Desktop/iquit-507f7-firebase-adminsdk-go447-bc8b2413f2.json") # Local Creds
+cred = credentials.Certificate(
+    "/Users/oguzhanakan/Desktop/iquit-507f7-firebase-adminsdk-go447-bc8b2413f2.json")  # Local Creds
 # cred = credentials.Certificate("/home/iquit-507f7-firebase-adminsdk-go447-bc8b2413f2.json") # Server Creds
 default_app = firebase_admin.initialize_app(cred)
 
 
 def sign_in(request):
-    print(request.body)  # Debug
-    try:
-        d = json.loads(request.body)
-        id_token = d["token"]
-        _user = auth.verify_id_token(id_token)
-        print(f"_user: {_user}")  # Debug
-        _nuser = {
-            "uid":_user["uid"],
-            "first_name":" ".join(_user["name"].split(" ")[:-1]),
-            "last_name": _user["name"].split(" ")[-1],
-            "auth_source": _user["firebase"]["sign_in_provider"],
-            "email": _user["email"]
-        }
-        user, created = User.objects.get_or_create(_nuser)
-        print(f"created?: {created}")  # Debug
-        if created:
-            print("setting first_joined to")
-            user.first_joined = datetime.date.today()
-            user.save()
-        else:
-            user.last_login = datetime.date.today()
-            user.save()
-            print(f"not created: {user.email}, {user.uid}, {user.id}")
-        return JsonResponse({
-            "success": True,
-            "user": model_to_dict(user,fields=["first_name","last_name","is_info_complete","email","username"])
-        })
-    except:
-        return JsonResponse({
-            "success": False
-        })
+    print("signin request received.")
+    # print(request.body)  # Debug
+    # try:
+    d = json.loads(request.body)
+    id_token = d["token"]
+    _user = auth.verify_id_token(id_token)
+    # print(f"_user: {_user}")  # Debug
+    user, created = User.objects.get_or_create(
+        uid=_user["uid"],
+        auth_source=_user["firebase"]["sign_in_provider"],
+        email=_user["email"]
+    )
+    # print(f"created?: {created}")  # Debug
+    if created:
+        # print(f"setting first_joined to {datetime.date.today()}")  # Debug
+        user.first_joined = timezone.now()
+        user.save()
+    else:
+        user.last_login = timezone.now()
+        user.save()
+        # print(f"not created: {user.email}, {user.uid}, {user.id}")
+    return JsonResponse({
+        "success": True,
+        "user": model_to_dict(user, fields=["first_name", "last_name", "is_info_complete", "email", "username"])
+    })
+    # except:
+    #     return JsonResponse({
+    #         "success": False
+    #     })
 
 
 def update_user(request):
     print(request.body)  # Debug
     try:
         d = json.loads(request.body)
-        print(d)  # Debug
+        d["is_info_complete"] = True
+        # print(d)  # Debug
         query = User.objects.filter(uid=d["uid"])
-        query.update(**d | {"is_info_complete": True})
+
+        query.update(**d)
         return JsonResponse({
             "success": True,
-            "user": model_to_dict(query[0],fields=["first_name","last_name","is_info_complete","email","username"])
+            "user": model_to_dict(query[0], fields=["first_name", "last_name", "is_info_complete", "email", "username"])
         })
     except Exception as e:
         return JsonResponse({
