@@ -8,9 +8,8 @@ from django.forms.models import model_to_dict
 import datetime
 from django.utils import timezone
 
-cred = credentials.Certificate(
-    "/Users/oguzhanakan/Desktop/iquit-507f7-firebase-adminsdk-go447-bc8b2413f2.json")  # Local Creds
-# cred = credentials.Certificate("/home/iquit-507f7-firebase-adminsdk-go447-bc8b2413f2.json") # Server Creds
+# cred = credentials.Certificate("/Users/oguzhanakan/Desktop/iquit-507f7-firebase-adminsdk-go447-bc8b2413f2.json")  # Local Creds
+cred = credentials.Certificate("src/firebase-credentials.json")  # Local Creds
 default_app = firebase_admin.initialize_app(cred)
 
 
