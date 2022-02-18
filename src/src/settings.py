@@ -82,7 +82,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'coviddb',
         'USER': 'postgres',
-        'PASSWORD': '2297spky',
+        'PASSWORD': '1122',
         # 'HOST': '147.182.254.201',
         'HOST': 'localhost',
         'PORT': '5432',
