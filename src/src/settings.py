@@ -83,8 +83,8 @@ DATABASES = {
         'NAME': 'coviddb',
         'USER': 'postgres',
         'PASSWORD': '1122',
-        # 'HOST': '147.182.254.201',
-        'HOST': 'localhost',
+        'HOST': '137.184.216.180',
+        # 'HOST': 'localhost',
         'PORT': '5432',
     }
 }
