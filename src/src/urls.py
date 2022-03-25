@@ -17,11 +17,11 @@ from django.contrib import admin
 from django.urls import path
 from django.urls.conf import include
 
-import appconfig
-
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('appconfig/', include('appconfig.urls')),
     path('user/', include('user.urls')),
-    path('labtest/', include('labtest.urls'))
+    # path('labtest/', include('labtest.urls')),
+    path('api-auth/', include('rest_framework.urls')),
+    path('api/v1/', include("api.urls")),
 ]

@@ -1,6 +1,12 @@
-from django.urls import path
-from django.urls import include, re_path
-from . import views
+# from django.urls import path
+# from django.urls import include
+# from rest_framework import routers
+# from . import views
 
-urlpatterns = [
-]
+# router = routers.DefaultRouter()
+# router.register(r'locations', views.LocationViewSet)
+
+# urlpatterns = [
+#     path('locations', views.locations),
+#     path('blackout-dates', views.blackout_dates),
+# ]

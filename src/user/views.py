@@ -9,40 +9,42 @@ import datetime
 from django.utils import timezone
 
 # cred = credentials.Certificate("/Users/oguzhanakan/Desktop/iquit-507f7-firebase-adminsdk-go447-bc8b2413f2.json")  # Local Creds
-cred = credentials.Certificate("src/firebase-credentials.json")  # Local Creds
-default_app = firebase_admin.initialize_app(cred)
+# cred = credentials.Certificate("src/firebase-credentials.json")  # Local Creds
+# default_app = firebase_admin.initialize_app(cred)
 
 
 def sign_in(request):
-    print("signin request received.")
-    # print(request.body)  # Debug
-    # try:
-    d = json.loads(request.body)
-    id_token = d["token"]
-    _user = auth.verify_id_token(id_token)
-    # print(f"_user: {_user}")  # Debug
-    user, created = User.objects.get_or_create(
-        uid=_user["uid"],
-        auth_source=_user["firebase"]["sign_in_provider"],
-        email=_user["email"]
-    )
-    # print(f"created?: {created}")  # Debug
-    if created:
-        # print(f"setting first_joined to {datetime.date.today()}")  # Debug
-        user.first_joined = timezone.now()
-        user.save()
-    else:
-        user.last_login = timezone.now()
-        user.save()
-        # print(f"not created: {user.email}, {user.uid}, {user.id}")
-    return JsonResponse({
-        "success": True,
-        "user": model_to_dict(user, fields=["first_name", "last_name", "is_info_complete", "email", "username"])
-    })
-    # except:
-    #     return JsonResponse({
-    #         "success": False
-    #     })
+    pass
+    # print("signin request received.")
+    # # print(request.body)  # Debug
+    # # try:
+    # d = json.loads(request.body)
+    # id_token = d["token"]
+    # _user = auth.verify_id_token(id_token)
+    # # print(f"_user: {_user}")  # Debug
+    # user, created = User.objects.get_or_create(
+    #     uid=_user["uid"],
+    #     auth_source=_user["firebase"]["sign_in_provider"],
+    #     email=_user["email"]
+    # )
+    # # print(f"created?: {created}")  # Debug
+    # if created:
+    #     # print(f"setting first_joined to {datetime.date.today()}")  # Debug
+    #     user.first_joined = timezone.now()
+    #     user.save()
+    # else:
+    #     user.last_login = timezone.now()
+    #     user.save()
+    #     # print(f"not created: {user.email}, {user.uid}, {user.id}")
+    # token, created = Token.objects.get_or_create(user=user)
+    # return JsonResponse({
+    #     "success": True,
+    #     "user": model_to_dict(user, fields=["first_name", "last_name", "is_info_complete", "email", "username"])
+    # })
+    # # except:
+    # #     return JsonResponse({
+    # #         "success": False
+    # #     })
 
 
 def update_user(request):
