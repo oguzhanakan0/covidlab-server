@@ -15,7 +15,7 @@ from rest_framework.authentication import TokenAuthentication
 from django.utils import timezone
 from django.forms.models import model_to_dict
 
-from labtest.serializers import LocationSerializer, BlackoutSlotsSerializer
+from labtest.serializers import LabTestShortSerializer, LocationSerializer, BlackoutSlotsSerializer
 from labtest.models import LabTest, Location
 from user.models import User
 
@@ -52,6 +52,36 @@ class MakeAppointmentView(APIView):
             return Response({
                 "detail": str(e)
             }, status=500)
+
+
+class GetAppointmentsView(generics.ListAPIView):
+    permission_classes = (IsAuthenticated,)
+    authentication_classes = [TokenAuthentication]
+    http_method_names = ['get']
+    serializer_class = LabTestShortSerializer
+    queryset = LabTest.objects.all()
+
+    def get_queryset(self):
+        queryset = self.queryset.filter(user=self.request.user)
+        return queryset
+
+    # def get(self, request):
+    #     try:
+    #         # print("get appointments request received.") # Debug
+    #         # print(request.user) # Debug
+    #         # print(request.user.email) # Debug
+    #         # print(request.body) # Debug
+    #         appointments = LabTest.objects.filter(user=request.user)
+    #         serializer = LabTestShortSerializer(appointments, many=True)
+
+    #         return Response({
+    #             "success": True,
+    #             "data":serializer.data
+    #         })
+    #     except Exception as e:
+    #         return Response({
+    #             "detail": str(e)
+    #         }, status=500)
 
 
 class SigninView(ObtainAuthToken):

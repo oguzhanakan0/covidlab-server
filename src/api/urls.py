@@ -10,5 +10,6 @@ urlpatterns = [
     re_path(r'locations/blackout-slots/(?P<location>[^/.]+)',
             views.AppointmentBlackoutSlotsAPIView.as_view(), name="blackout_slots"),
     path('users/signin/', views.SigninView.as_view()),
+    path('users/appointments/', views.GetAppointmentsView.as_view()),
     path('labtest/make-appointment/', views.MakeAppointmentView.as_view())
 ]
