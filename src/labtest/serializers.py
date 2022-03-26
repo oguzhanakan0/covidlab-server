@@ -21,3 +21,9 @@ class BlackoutSlotsSerializer(serializers.Serializer):
                                       test_date__gte=now,
                                       test_date__lte=now+timedelta(days=14))\
             .values_list("test_date", flat=True)
+
+
+class LabTestShortSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = LabTest
+        fields = ['test_date', 'location', 'payment_date', 'result']
