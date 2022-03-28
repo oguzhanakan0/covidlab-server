@@ -23,7 +23,16 @@ class BlackoutSlotsSerializer(serializers.Serializer):
             .values_list("test_date", flat=True)
 
 
+# class LocationSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Location
+#         fields = ['name']
+
+
 class LabTestShortSerializer(serializers.HyperlinkedModelSerializer):
+
+    location = LocationSerializer(many=False)
+
     class Meta:
         model = LabTest
         fields = ['test_date', 'location', 'payment_date', 'result']
