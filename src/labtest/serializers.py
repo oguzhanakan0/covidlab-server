@@ -18,7 +18,7 @@ class BlackoutSlotsSerializer(serializers.Serializer):
 
     def get_blackout_slots(self, location):
         now = timezone.now()
-        return LabTest.objects.filter(location=location.slug,
+        return LabTest.objects.filter(location=location.slug, canceled=False,
                                       test_date__gte=now,
                                       test_date__lte=now+timedelta(days=14))\
             .values_list("test_date", flat=True)

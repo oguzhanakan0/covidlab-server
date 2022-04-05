@@ -143,6 +143,29 @@ class CancelAppointmentView(APIView):
             }, status=500)
 
 
+class ChangeNameView(APIView):
+    permission_classes = (IsAuthenticated,)
+    authentication_classes = [TokenAuthentication]
+
+    def post(self, request):
+        try:
+            d = json.loads(request.body)
+            print("change name request received.")
+            print(d)
+            user = request.user
+            user.first_name = d["first_name"]
+            user.last_name = d["last_name"]
+            user.save()
+            print(f"user's name changed to: {user.first_name, user.last_name}")
+            return Response({
+                "success": True
+            })
+        except Exception as e:
+            return Response({
+                "detail": str(e)
+            }, status=500)
+
+
 class MakePaymentView(APIView):
     permission_classes = (IsAuthenticated,)
     authentication_classes = [TokenAuthentication]
