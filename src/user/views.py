@@ -58,7 +58,7 @@ def update_user(request):
         query.update(**d)
         return JsonResponse({
             "success": True,
-            "user": model_to_dict(query[0], fields=["first_name", "last_name", "is_info_complete", "email", "username"])
+            "user": model_to_dict(query[0], fields=["first_name", "last_name", "is_info_complete", "email", "username", "birth_date"])
         })
     except Exception as e:
         return JsonResponse({

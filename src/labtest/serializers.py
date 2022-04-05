@@ -8,7 +8,8 @@ from datetime import timedelta
 class LocationSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Location
-        fields = ['name', 'address', 'latitude', 'longitude', 'slug']
+        fields = ['name', 'address', 'latitude',
+                  'longitude', 'slug', 'url', "contact_no"]
 
 
 class BlackoutSlotsSerializer(serializers.Serializer):
@@ -35,4 +36,5 @@ class LabTestShortSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = LabTest
-        fields = ['test_date', 'location', 'payment_date', 'result']
+        fields = ['id', 'test_date', 'location',
+                  'payment_date', 'result', 'canceled', "result_date", "verify_id"]
