@@ -1,4 +1,5 @@
 import json
+from django.http import HttpResponse
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import auth
@@ -54,6 +55,113 @@ class MakeAppointmentView(APIView):
             }, status=500)
 
 
+class VerifyTestResultView(APIView):
+    # permission_classes = (IsAuthenticated,)
+    # authentication_classes = [TokenAuthentication]
+    queryset = LabTest.objects.all()
+    # serializer_class = BlackoutSlotsSerializer
+    # permission_classes = [permissions.IsAuthenticated]
+    http_method_names = ['get']
+
+    def get_queryset(self):
+        print(self.kwargs.get("id"))
+        queryset = self.queryset.filter(verify_id=self.kwargs.get("id"))
+        return queryset
+
+    def get(self, request, id):
+        try:
+            print("verify test result request received.")  # Debug
+            labtest = self.get_queryset()
+            if len(labtest) == 0:
+                raise Exception("The test does not exist.")
+            if len(labtest) > 1:
+                raise Exception("This cannot happen.")
+
+            l = labtest[0]
+            response_text = f"""<h1>
+            {str(l.user.first_name)} {str(l.user.last_name)}
+            (DOB: {str(l.user.birth_date)}) has been tested
+            {"POSITIVE" if l.result else "NEGATIVE"} for COVID-19 on {str(l.test_date)}.
+            </h1>
+            """
+            # LabTest(d)
+            return HttpResponse(response_text)
+        except Exception as e:
+            return Response({
+                "detail": str(e)
+            }, status=500)
+
+
+class UpdateAppointmentView(APIView):
+    permission_classes = (IsAuthenticated,)
+    authentication_classes = [TokenAuthentication]
+
+    def post(self, request):
+        try:
+            d = json.loads(request.body)
+            print("update appointment request received.")
+            print(d)
+            labtest = LabTest.objects.filter(pk=d["test_id"])
+            del d["test_id"]
+            labtest.update(**d)
+            print(
+                f"labtest updated to:\n\
+                test_date: {labtest[0].test_date},\
+                \npayment_date: {labtest[0].payment_date},\
+                \nlocation:{labtest[0].location}"
+            )
+            return Response({
+                "success": True
+            })
+        except Exception as e:
+            return Response({
+                "detail": str(e)
+            }, status=500)
+
+
+class CancelAppointmentView(APIView):
+    permission_classes = (IsAuthenticated,)
+    authentication_classes = [TokenAuthentication]
+
+    def post(self, request):
+        try:
+            d = json.loads(request.body)
+            print("cancel appointment request received.")
+            print(d)
+            labtest = LabTest.objects.filter(pk=d["test_id"])[0]
+            labtest.canceled = True
+            labtest.save()
+            print(
+                f"labtest canceled."
+            )
+            return Response({
+                "success": True
+            })
+        except Exception as e:
+            return Response({
+                "detail": str(e)
+            }, status=500)
+
+
+class MakePaymentView(APIView):
+    permission_classes = (IsAuthenticated,)
+    authentication_classes = [TokenAuthentication]
+
+    def post(self, request):
+        try:
+            d = json.loads(request.body)
+            labtest = LabTest.objects.get(pk=d["test_id"])
+            labtest.payment_date = timezone.now()
+            labtest.save()
+            return Response({
+                "success": True
+            })
+        except Exception as e:
+            return Response({
+                "detail": "Payment was not successful. Please try again later."
+            }, status=500)
+
+
 class GetAppointmentsView(generics.ListAPIView):
     permission_classes = (IsAuthenticated,)
     authentication_classes = [TokenAuthentication]
@@ -62,26 +170,8 @@ class GetAppointmentsView(generics.ListAPIView):
     queryset = LabTest.objects.all()
 
     def get_queryset(self):
-        queryset = self.queryset.filter(user=self.request.user)
+        queryset = self.queryset.filter(user=self.request.user, canceled=False)
         return queryset
-
-    # def get(self, request):
-    #     try:
-    #         # print("get appointments request received.") # Debug
-    #         # print(request.user) # Debug
-    #         # print(request.user.email) # Debug
-    #         # print(request.body) # Debug
-    #         appointments = LabTest.objects.filter(user=request.user)
-    #         serializer = LabTestShortSerializer(appointments, many=True)
-
-    #         return Response({
-    #             "success": True,
-    #             "data":serializer.data
-    #         })
-    #     except Exception as e:
-    #         return Response({
-    #             "detail": str(e)
-    #         }, status=500)
 
 
 class SigninView(ObtainAuthToken):
@@ -112,7 +202,7 @@ class SigninView(ObtainAuthToken):
         return Response({
             "success": True,
             'token': token.key,
-            'user': model_to_dict(user, fields=["first_name", "last_name", "is_info_complete", "email", "username"]),
+            'user': model_to_dict(user, fields=["first_name", "last_name", "is_info_complete", "email", "username", "birth_date"]),
         })
 
 

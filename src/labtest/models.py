@@ -14,6 +14,7 @@ class Location(models.Model):
     latitude = models.FloatField()
     longitude = models.FloatField()
     slug = models.SlugField(max_length=40, unique=True)
+    url = models.URLField()
 
     def __str__(self) -> str:
         return self.slug
@@ -25,5 +26,9 @@ class LabTest(models.Model):
     test_date = models.DateTimeField()
     location = models.ForeignKey(
         Location, on_delete=models.DO_NOTHING, to_field="slug")
-    payment_date = models.DateField(blank=True, null=True)
+    payment_date = models.DateTimeField(blank=True, null=True)
     result = models.BooleanField(blank=True, null=True)
+    result_date = models.DateTimeField(blank=True, null=True)
+    canceled = models.BooleanField(default=False)
+    verify_id = models.UUIDField(
+        default=uuid.uuid4, primary_key=False, unique=True)

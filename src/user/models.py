@@ -1,11 +1,13 @@
 from django.db import models
 from src.enums import AuthSource, Relationship
+from django.contrib.auth.models import PermissionsMixin
+
 import uuid
 
 # Create your models here.
 
 
-class User(models.Model):
+class User(PermissionsMixin, models.Model, ):
 
     REQUIRED_FIELDS = ('first_name', 'last_name')
     USERNAME_FIELD = 'email'
