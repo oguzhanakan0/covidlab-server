@@ -24,6 +24,41 @@ from user.models import User
 cred = credentials.Certificate("src/firebase-credentials.json")  # Local Creds
 default_app = firebase_admin.initialize_app(cred)
 
+class SigninView(ObtainAuthToken):
+    def post(self, request):
+        print("signin request received.")
+        # print(request.body)  # Debug
+
+        d = json.loads(request.body)
+        id_token = d["token"]
+        _user = auth.verify_id_token(id_token)
+        # print(f"_user: {_user}")  # Debug
+
+        user, created = User.objects.get_or_create(
+            uid=_user["uid"],
+            auth_source=_user["firebase"]["sign_in_provider"],
+            email=_user["email"]
+        )
+        # print(f"user: {user}")  # Debug
+
+        if created:
+            user.first_joined = timezone.now()
+            user.save()
+        else:
+            user.last_login = timezone.now()
+            user.save()
+        token, created = Token.objects.get_or_create(user=user)
+        return Response({
+            "success": True,
+            'token': token.key,
+            'user': model_to_dict(user, fields=["first_name", "last_name", "is_info_complete", "email", "username", "birth_date"]),
+        })
+
+class LocationViewSet(viewsets.ModelViewSet):
+    queryset = Location.objects.all()
+    serializer_class = LocationSerializer
+    # permission_classes = [permissions.IsAuthenticated]
+    http_method_names = ['get']
 
 class MakeAppointmentView(APIView):
     permission_classes = (IsAuthenticated,)
@@ -53,7 +88,6 @@ class MakeAppointmentView(APIView):
             return Response({
                 "detail": str(e)
             }, status=500)
-
 
 class VerifyTestResultView(APIView):
     # permission_classes = (IsAuthenticated,)
@@ -91,7 +125,6 @@ class VerifyTestResultView(APIView):
                 "detail": str(e)
             }, status=500)
 
-
 class UpdateAppointmentView(APIView):
     permission_classes = (IsAuthenticated,)
     authentication_classes = [TokenAuthentication]
@@ -118,7 +151,6 @@ class UpdateAppointmentView(APIView):
                 "detail": str(e)
             }, status=500)
 
-
 class CancelAppointmentView(APIView):
     permission_classes = (IsAuthenticated,)
     authentication_classes = [TokenAuthentication]
@@ -142,7 +174,6 @@ class CancelAppointmentView(APIView):
                 "detail": str(e)
             }, status=500)
 
-
 class ChangeNameView(APIView):
     permission_classes = (IsAuthenticated,)
     authentication_classes = [TokenAuthentication]
@@ -165,7 +196,6 @@ class ChangeNameView(APIView):
                 "detail": str(e)
             }, status=500)
 
-
 class MakePaymentView(APIView):
     permission_classes = (IsAuthenticated,)
     authentication_classes = [TokenAuthentication]
@@ -184,7 +214,6 @@ class MakePaymentView(APIView):
                 "detail": "Payment was not successful. Please try again later."
             }, status=500)
 
-
 class GetAppointmentsView(generics.ListAPIView):
     permission_classes = (IsAuthenticated,)
     authentication_classes = [TokenAuthentication]
@@ -195,46 +224,6 @@ class GetAppointmentsView(generics.ListAPIView):
     def get_queryset(self):
         queryset = self.queryset.filter(user=self.request.user, canceled=False)
         return queryset
-
-
-class SigninView(ObtainAuthToken):
-
-    def post(self, request):
-        print("signin request received.")
-        # print(request.body)  # Debug
-
-        d = json.loads(request.body)
-        id_token = d["token"]
-        _user = auth.verify_id_token(id_token)
-        # print(f"_user: {_user}")  # Debug
-
-        user, created = User.objects.get_or_create(
-            uid=_user["uid"],
-            auth_source=_user["firebase"]["sign_in_provider"],
-            email=_user["email"]
-        )
-        # print(f"user: {user}")  # Debug
-
-        if created:
-            user.first_joined = timezone.now()
-            user.save()
-        else:
-            user.last_login = timezone.now()
-            user.save()
-        token, created = Token.objects.get_or_create(user=user)
-        return Response({
-            "success": True,
-            'token': token.key,
-            'user': model_to_dict(user, fields=["first_name", "last_name", "is_info_complete", "email", "username", "birth_date"]),
-        })
-
-
-class LocationViewSet(viewsets.ModelViewSet):
-    queryset = Location.objects.all()
-    serializer_class = LocationSerializer
-    # permission_classes = [permissions.IsAuthenticated]
-    http_method_names = ['get']
-
 
 class AppointmentBlackoutSlotsAPIView(generics.ListAPIView):
     queryset = Location.objects.all()
