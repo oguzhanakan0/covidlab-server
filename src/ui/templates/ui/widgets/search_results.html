@@ -1,0 +1,119 @@
+{% load tz %}
+<h4>Search Results</h4>
+
+<style>
+    td {
+        /* height: 150px; */
+        vertical-align: middle;
+    }
+
+    .attendance-btn {
+        width: 60px;
+    }
+
+    .result-btn {
+        width: 100px;
+    }
+
+    .attendance-cell {
+        width: 180px;
+    }
+
+    .result-cell {
+        width: 240px;
+    }
+</style>
+<div class="table-responsive">
+    <table id="#search-results-table" class="table table-striped">
+        <thead>
+            <tr>
+                <th>Test Date</th>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>DOB</th>
+                <th>Payment</th>
+                <th>Attendance</th>
+                <th>Test Result</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for labtest in labtests %}
+            <tr id="{{labtest.id}}">
+                <td>{{labtest.test_date|timezone:"America/Los_Angeles"|date:'d/m/y H:i' }}</td>
+                <td>{{labtest.user.first_name}}</td>
+                <td>{{labtest.user.last_name}}</td>
+                <td>{{labtest.user.birth_date|date:'d/m/y'}}</td>
+                <td>{% if not labtest.user.payment_date %}Done{%else%}Pending{%endif%}</td>
+                <td class="attendance-cell">
+                    {% if labtest.canceled %}
+                    <span class="text-primary">
+                        Canceled
+                    </span>
+                    {% elif labtest.attended is None %}
+                    <button onclick="setAttendance('{{labtest.id}}', 1)"
+                        class="m-1 btn btn-outline-primary attendance-btn" type="submit">Yes</button>
+                    <button onclick="setAttendance('{{labtest.id}}', 0)"
+                        class="m-1 btn btn-outline-secondary attendance-btn" type="submit">No</button>
+                    {% else %}
+                    {% include "ui/widgets/attendance_cell.html" with attended=labtest.attended %}
+                    {% endif %}
+                </td>
+                <td class="result-cell">
+                    {% if labtest.canceled %}
+                    <span class="text-primary">-</span>
+                    {% elif labtest.attended is None %}
+                    <span class="text-warning">Pending attendance</span>
+                    {% elif not labtest.attended %}
+                    <span class="text-primary">-</span>
+                    {% elif labtest.result is None %}
+                    <button onclick="setResult('{{labtest.id}}', 0)" class="m-1 btn btn-success result-btn"
+                        type="submit">Negative</button>
+                    <button onclick="setResult('{{labtest.id}}', 1)" class="m-1 btn btn-danger result-btn"
+                        type="submit">Positive</button>
+                    {% else %}
+                    {% include "ui/widgets/result_cell.html" with result=labtest.result %}
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+    function setAttendance(test_id, attended) {
+        $.ajax({
+            type: "POST",
+            url: "/set-attendance/",
+            data: JSON.stringify({ "test_id": test_id, "attended": attended }),
+            success: function (data) {
+                console.log("success");
+                $("#" + test_id + " > .attendance-cell").html(data);
+                if (attended)
+                    result_cell_content = `
+                        <button onclick="setResult('${test_id}', 0)" class="m-1 btn btn-success result-btn"
+                            type="submit">Negative</button>
+                        <button onclick="setResult('${test_id}', 1)" class="m-1 btn btn-danger result-btn"
+                            type="submit">Positive</button>
+                    `;
+                else
+                    result_cell_content = `
+                        <span class="text-primary">-</span>
+                    `;
+                $("#" + test_id + " > .result-cell").html(result_cell_content);
+            }
+        });
+    }
+
+    function setResult(test_id, result) {
+        $.ajax({
+            type: "POST",
+            url: "/set-result/",
+            data: JSON.stringify({ "test_id": test_id, "result": result }),
+            success: function (data) {
+                console.log("success");
+                $("#" + test_id + " > .result-cell").html(data);
+            }
+        });
+    }
+</script>

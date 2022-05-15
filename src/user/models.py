@@ -1,13 +1,14 @@
 from django.db import models
 from src.enums import AuthSource, Relationship
 from django.contrib.auth.models import PermissionsMixin
-
+from django.contrib.auth.models import UserManager
+from django.contrib.auth.models import AbstractUser
 import uuid
 
 # Create your models here.
 
 
-class User(PermissionsMixin, models.Model, ):
+class User(AbstractUser, ):
 
     REQUIRED_FIELDS = ('first_name', 'last_name')
     USERNAME_FIELD = 'email'
@@ -15,8 +16,8 @@ class User(PermissionsMixin, models.Model, ):
 
     id = models.UUIDField(default=uuid.uuid4, primary_key=True)  # ok
     uid = models.CharField(max_length=100, unique=True)  # ok
-    username = models.CharField(
-        max_length=40, unique=True, null=True, blank=True)  # ok
+    # username = models.CharField(
+    #     max_length=40, unique=True, null=True, blank=True)  # ok
     first_name = models.CharField(max_length=100)  # ok
     last_name = models.CharField(max_length=100)  # ok
     email = models.EmailField(unique=True)  # ok
@@ -27,5 +28,7 @@ class User(PermissionsMixin, models.Model, ):
         max_length=20, choices=AuthSource.choices)  # ok
     is_info_complete = models.BooleanField(default=False)  # ok
     marketing_check = models.BooleanField(default=False)  # ok
-    is_anonymous = models.BooleanField(default=False)
+    # is_anonymous = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
+
+    objects = UserManager()

@@ -30,6 +30,9 @@ class LabTest(models.Model):
     result = models.BooleanField(blank=True, null=True)
     result_date = models.DateTimeField(blank=True, null=True)
     canceled = models.BooleanField(default=False)
-    attended = models.BooleanField(default=False)
+    attended = models.BooleanField(blank=True, null=True)
     verify_id = models.UUIDField(
         default=uuid.uuid4, primary_key=False, unique=True)
+
+    def __str__(self) -> str:
+        return str(self.location)+" - "+str(self.test_date)
